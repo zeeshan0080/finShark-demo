@@ -1,5 +1,6 @@
-using finShark_demo.Data;
+
 using Microsoft.EntityFrameworkCore;
+using finShark_demo.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

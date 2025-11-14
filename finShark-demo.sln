@@ -2,7 +2,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "finShark-demo.Application", "finShark-demo.Application\finShark-demo.Application.csproj", "{2E469C57-BEB7-81DB-C757-3FF45580479E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "finShark-demo", "api\finShark-demo.csproj", "{71F68F3B-1DD2-E7DA-125A-E5E2A01C488E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "finShark-demo.Infrastructure", "finShark-demo.Infrastructure\finShark-demo.Infrastructure.csproj", "{016035B2-BB51-90B2-456F-7EDBC2EBA68B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "finShark-demo.Core", "finShark-demo.Core\finShark-demo.Core.csproj", "{5797ECCE-B776-C9FC-94ED-490F9019243F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,15 +16,27 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2E469C57-BEB7-81DB-C757-3FF45580479E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E469C57-BEB7-81DB-C757-3FF45580479E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E469C57-BEB7-81DB-C757-3FF45580479E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E469C57-BEB7-81DB-C757-3FF45580479E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{71F68F3B-1DD2-E7DA-125A-E5E2A01C488E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71F68F3B-1DD2-E7DA-125A-E5E2A01C488E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71F68F3B-1DD2-E7DA-125A-E5E2A01C488E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71F68F3B-1DD2-E7DA-125A-E5E2A01C488E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{016035B2-BB51-90B2-456F-7EDBC2EBA68B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{016035B2-BB51-90B2-456F-7EDBC2EBA68B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{016035B2-BB51-90B2-456F-7EDBC2EBA68B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{016035B2-BB51-90B2-456F-7EDBC2EBA68B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5797ECCE-B776-C9FC-94ED-490F9019243F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5797ECCE-B776-C9FC-94ED-490F9019243F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5797ECCE-B776-C9FC-94ED-490F9019243F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5797ECCE-B776-C9FC-94ED-490F9019243F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {951302D2-64AB-49D4-9734-D4285DEFBC89}
+		SolutionGuid = {AC5D4668-8186-42ED-A739-9AD2E62D47E8}
 	EndGlobalSection
 EndGlobal

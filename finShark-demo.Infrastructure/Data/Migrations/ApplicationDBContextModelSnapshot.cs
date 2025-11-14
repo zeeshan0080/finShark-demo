@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using finShark_demo.Data;
+using finShark_demo.Infrastructure.Data;
 
 #nullable disable
 
-namespace finShark_demo.Migrations
+namespace finShark_demo.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
     partial class ApplicationDBContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace finShark_demo.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("finShark_demo.Models.User", b =>
+            modelBuilder.Entity("finShark_demo.Core.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
