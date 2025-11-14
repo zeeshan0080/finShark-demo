@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace finShark_demo.Core.Entities
 {
     public class User : BaseEntity
