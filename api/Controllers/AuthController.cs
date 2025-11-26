@@ -28,7 +28,8 @@ namespace finShark_demo.Controllers
         public async Task<ActionResult> Register([FromBody] RegisterUserDto registerDto)
         {
             var response = await _userService.RegisterAsync(registerDto);
-            return CreatedAtAction(nameof(GetProfile), null, response);
+            return StatusCode(response.StatusCode, response);
+            // return CreatedAtAction(nameof(GetProfile), null, response);
         }
 
         [HttpPost("auth/login")]
@@ -37,7 +38,8 @@ namespace finShark_demo.Controllers
         public async Task<ActionResult> Login([FromBody] LoginDto loginDto)
         {
             var response = await _userService.LoginAsync(loginDto);
-            return Ok(response);
+            return StatusCode(response.StatusCode, response);
+            // return Ok(response);
         }
 
         [Authorize]
@@ -64,8 +66,9 @@ namespace finShark_demo.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
 
-            var user = await _userService.UpdateUserAsync(userId, updateDto);
-            return Ok(user);
+            var response = await _userService.UpdateUserAsync(userId, updateDto);
+            return StatusCode(response.StatusCode, response);
+            // return Ok(user);
         }
 
         [Authorize]
@@ -78,8 +81,9 @@ namespace finShark_demo.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
 
-            await _userService.ChangePasswordAsync(userId, changePasswordDto);
-            return Ok(new { message = "Password changed successfully" });
+            var response = await _userService.ChangePasswordAsync(userId, changePasswordDto);
+            return StatusCode(response.StatusCode, response);
+            // return Ok(new { message = "Password changed successfully" });
         }
 
         [HttpGet("auth/verify-email/{gid}")]
@@ -87,8 +91,9 @@ namespace finShark_demo.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> VerifyEmail(Guid gid)
         {
-            await _userService.VerifyEmailAsync(gid);
-            return Ok(new { message = "Email verified successfully" });
+            var response = await _userService.VerifyEmailAsync(gid);
+            return StatusCode(response.StatusCode, response);
+            // return Ok(new { message = "Email verified successfully" });
         }
     }
 }

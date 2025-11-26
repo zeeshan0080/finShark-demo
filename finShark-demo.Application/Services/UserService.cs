@@ -9,10 +9,11 @@ using finShark_demo.Application.Mappers;
 using finShark_demo.Application.Services.Interfaces.Token;
 using finShark_demo.Application.Services.Interfaces.User;
 using finShark_demo.Core.Interfaces;
+using finShark_demo.Utils;
 
 namespace finShark_demo.Application.Services
 {
-    public class UserService : IUserService
+    public class UserService : BaseService, IUserService
     {
         private readonly IUserRepository _repository;
         private readonly ITokenService _tokenService;
@@ -23,7 +24,7 @@ namespace finShark_demo.Application.Services
             _tokenService = tokenService;
         }
 
-        public async Task<AuthResponseDto> RegisterAsync(RegisterUserDto registerDto)
+        public async Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterUserDto registerDto)
         {
             // Check if email already exists
             if (await _repository.EmailExistsAsync(registerDto.Email))
@@ -39,16 +40,17 @@ namespace finShark_demo.Application.Services
 
             // Generate token
             var token = _tokenService.GenerateToken(createdUser.Id, createdUser.Email, createdUser.Name);
-
-            return new AuthResponseDto
+            return SuccessResponse(
+                new AuthResponseDto
             {
                 Token = token,
                 User = UserMapper.ToDto(createdUser),
                 ExpiresAt = DateTime.UtcNow.AddHours(24)
-            };
+            }
+            );
         }
 
-        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        public async Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto loginDto)
         {
             var user = await _repository.GetByEmailAsync(loginDto.Email);
             
@@ -66,39 +68,41 @@ namespace finShark_demo.Application.Services
             // Generate token
             var token = _tokenService.GenerateToken(user.Id, user.Email, user.Name);
 
-            return new AuthResponseDto
+            return SuccessResponse(
+                new AuthResponseDto
             {
                 Token = token,
                 User = UserMapper.ToDto(user),
                 ExpiresAt = DateTime.UtcNow.AddHours(24)
-            };
+            }
+            );
         }
 
-        public async Task<UserDto> GetUserByIdAsync(int id)
+        public async Task<ApiResponse<UserDto>> GetUserByIdAsync(int id)
         {
             var user = await _repository.GetByIdAsync(id);
             if (user == null)
                 throw new Exception($"User with ID {id} not found");
 
-            return UserMapper.ToDto(user);
+            return SuccessResponse(UserMapper.ToDto(user));
         }
 
-        public async Task<UserDto> GetUserByGIdAsync(Guid gid)
+        public async Task<ApiResponse<UserDto>> GetUserByGIdAsync(Guid gid)
         {
             var user = await _repository.GetByGIdAsync(gid);
             if (user == null)
                 throw new Exception($"User with GUID {gid} not found");
 
-            return UserMapper.ToDto(user);
+            return SuccessResponse(UserMapper.ToDto(user));
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<ApiResponse<IEnumerable<UserDto>>> GetAllUsersAsync()
         {
             var users = await _repository.GetAllAsync();
-            return users.Select(UserMapper.ToDto);
+            return SuccessResponse(users.Select(UserMapper.ToDto));
         }
 
-        public async Task<UserDto> UpdateUserAsync(int id, UpdateUserDto updateDto)
+        public async Task<ApiResponse<UserDto>> UpdateUserAsync(int id, UpdateUserDto updateDto)
         {
             var user = await _repository.GetByIdAsync(id);
             if (user == null)
@@ -106,19 +110,20 @@ namespace finShark_demo.Application.Services
 
             UserMapper.UpdateEntity(user, updateDto);
             var updatedUser = await _repository.UpdateAsync(user);
-            return UserMapper.ToDto(updatedUser);
+            return SuccessResponse(UserMapper.ToDto(updatedUser));
         }
 
-        public async Task<bool> DeleteUserAsync(int id)
+        public async Task<ApiResponse<bool>> DeleteUserAsync(int id)
         {
             var exists = await _repository.ExistsAsync(id);
             if (!exists)
                 throw new Exception($"User with ID {id} not found");
 
-            return await _repository.DeleteAsync(id);
+            var result = await _repository.DeleteAsync(id);
+            return SuccessResponse(result);
         }
 
-        public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto)
+        public async Task<ApiResponse<bool>> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto)
         {
             var user = await _repository.GetByIdAsync(userId);
             if (user == null)
@@ -134,10 +139,10 @@ namespace finShark_demo.Application.Services
             user.PasswordHash = System.Text.Encoding.UTF8.GetBytes(newPasswordHash);
             
             await _repository.UpdateAsync(user);
-            return true;
+            return SuccessResponse(true, message: "Password changed successfully");
         }
 
-        public async Task<bool> VerifyEmailAsync(Guid gid)
+        public async Task<ApiResponse<bool>> VerifyEmailAsync(Guid gid)
         {
             var user = await _repository.GetByGIdAsync(gid);
             if (user == null)
@@ -145,7 +150,7 @@ namespace finShark_demo.Application.Services
 
             user.IsVerified = true;
             await _repository.UpdateAsync(user);
-            return true;
+            return SuccessResponse(true, message: "Email verified successfully");
         }
     }
 }

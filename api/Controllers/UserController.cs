@@ -21,26 +21,28 @@ namespace finShark_demo.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable>> GetAll()
         {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(users);
+            var response = await _userService.GetAllUsersAsync();
+            return StatusCode(response.StatusCode, response);
+            // return Ok(users);
         }
 
-        // [HttpGet("users/{id}")]
-        // [ProducesResponseType(StatusCodes.Status200OK)]
-        // [ProducesResponseType(StatusCodes.Status404NotFound)]
-        // public async Task<ActionResult> GetById(int id)
-        // {
-        //     var user = await _userService.GetUserByIdAsync(id);
-        //     return Ok(user);
-        // }
+        [HttpGet("users/by-id/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> GetById(int id)
+        {
+            var response = await _userService.GetUserByIdAsync(id);
+            return StatusCode(response.StatusCode, response);
+        }
 
         [HttpGet("users/{gid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetByGId(Guid gid)
         {
-            var user = await _userService.GetUserByGIdAsync(gid);
-            return Ok(user);
+            var response = await _userService.GetUserByGIdAsync(gid);
+            return StatusCode(response.StatusCode, response);
+            // return Ok(user);
         }
 
         [HttpDelete("users/{id}")]
@@ -48,8 +50,9 @@ namespace finShark_demo.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Delete(int id)
         {
-            await _userService.DeleteUserAsync(id);
-            return NoContent();
+            var response = await _userService.DeleteUserAsync(id);
+            return StatusCode(response.StatusCode, response);
+            // return NoContent();
         }
     }
 }
