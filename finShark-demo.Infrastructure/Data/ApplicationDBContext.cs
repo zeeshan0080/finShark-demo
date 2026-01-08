@@ -15,6 +15,7 @@ namespace finShark_demo.Infrastructure
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserRefreshToken> UserRefreshToken { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

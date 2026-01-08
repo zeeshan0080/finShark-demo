@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using finShark_demo.Application.DTOs;
 using finShark_demo.Application.DTOs.Auth;
@@ -8,7 +9,9 @@ using finShark_demo.Application.DTOs.User;
 using finShark_demo.Application.Mappers;
 using finShark_demo.Application.Services.Interfaces.Token;
 using finShark_demo.Application.Services.Interfaces.User;
+using finShark_demo.Core.Entities;
 using finShark_demo.Core.Interfaces;
+using finShark_demo.Core.Interfaces.Token;
 using finShark_demo.Utils;
 
 namespace finShark_demo.Application.Services
@@ -16,11 +19,13 @@ namespace finShark_demo.Application.Services
     public class UserService : BaseService, IUserService
     {
         private readonly IUserRepository _repository;
+        private readonly ITokenRepository _tokenRepository;
         private readonly ITokenService _tokenService;
 
-        public UserService(IUserRepository repository, ITokenService tokenService)
+        public UserService(IUserRepository repository, ITokenRepository tokenRepository, ITokenService tokenService)
         {
             _repository = repository;
+            _tokenRepository = tokenRepository;
             _tokenService = tokenService;
         }
 
@@ -39,21 +44,32 @@ namespace finShark_demo.Application.Services
             var createdUser = await _repository.AddAsync(user);
 
             // Generate token
-            var token = _tokenService.GenerateToken(createdUser.Id, createdUser.Email, createdUser.Name);
+            var tokenDetails = _tokenService.GenerateToken(createdUser.Id, createdUser.Email, createdUser.Name);
+
+            var refreshTokenDetails = new UserRefreshToken
+            {
+                UserId = createdUser.Id,
+                RefreshToken = tokenDetails.RefreshToken,
+                ExpiresAt = tokenDetails.RefreshTokenExpiresAt,
+                IsRevoked = false
+            };
+            await _tokenRepository.AddRefreshToken(refreshTokenDetails);
+
             return SuccessResponse(
                 new AuthResponseDto
-            {
-                Token = token,
-                User = UserMapper.ToDto(createdUser),
-                ExpiresAt = DateTime.UtcNow.AddHours(24)
-            }
+                {
+                    AccessToken = tokenDetails.AccessToken,
+                    RefreshToken = tokenDetails.RefreshToken,
+                    // User = UserMapper.ToDto(createdUser),
+                    ExpiresAt = tokenDetails.AccessTokenExpiresAt
+                }
             );
         }
 
         public async Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto loginDto)
         {
             var user = await _repository.GetByEmailAsync(loginDto.Email);
-            
+
             if (user == null)
                 throw new Exception("Invalid email or password");
 
@@ -66,16 +82,38 @@ namespace finShark_demo.Application.Services
                 throw new Exception("Invalid email or password");
 
             // Generate token
-            var token = _tokenService.GenerateToken(user.Id, user.Email, user.Name);
+            var tokenDetails = _tokenService.GenerateToken(user.Id, user.Email, user.Name);
+
+            var refreshTokenDetails = new UserRefreshToken
+            {
+                UserId = user.Id,
+                RefreshToken = tokenDetails.RefreshToken,
+                ExpiresAt = tokenDetails.RefreshTokenExpiresAt,
+                IsRevoked = false
+            };
+            await _tokenRepository.AddRefreshToken(refreshTokenDetails);
 
             return SuccessResponse(
                 new AuthResponseDto
-            {
-                Token = token,
-                User = UserMapper.ToDto(user),
-                ExpiresAt = DateTime.UtcNow.AddHours(24)
-            }
+                {
+                    AccessToken = tokenDetails.AccessToken,
+                    RefreshToken = tokenDetails.RefreshToken,
+                    // User = UserMapper.ToDto(user),
+                    ExpiresAt = DateTime.UtcNow.AddHours(24)
+                }
             );
+        }
+
+        public async Task<ApiResponse<UserDto>> GetUserProfileAsync(int id)
+        {
+            var user = await _repository.GetByIdAsync(id);
+            if (user == null)
+                throw new Exception($"User with ID {id} not found");
+
+            if (!user.IsActive)
+                throw new ArgumentException("Your account is deactivated, Please contact admin");
+
+            return SuccessResponse(UserMapper.ToDto(user));
         }
 
         public async Task<ApiResponse<UserDto>> GetUserByIdAsync(int id)
@@ -137,7 +175,7 @@ namespace finShark_demo.Application.Services
             // Hash new password
             var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
             user.PasswordHash = System.Text.Encoding.UTF8.GetBytes(newPasswordHash);
-            
+
             await _repository.UpdateAsync(user);
             return SuccessResponse(true, message: "Password changed successfully");
         }
@@ -151,6 +189,61 @@ namespace finShark_demo.Application.Services
             user.IsVerified = true;
             await _repository.UpdateAsync(user);
             return SuccessResponse(true, message: "Email verified successfully");
+        }
+
+        public async Task<ApiResponse<AuthResponseDto>> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+        {
+
+            var tokenClaims = _tokenService.ValidateToken(refreshTokenDto.AccessToken);
+            if(tokenClaims == null)
+            {
+                throw new Exception("Invalid access token");
+            }
+            var userIdClaim = tokenClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                throw new Exception("Invalid access token");
+
+            var user = await _repository.GetByIdAsync(userId);
+            if (user == null)
+                throw new Exception("Invalid access token");
+
+            if (!user.IsActive)
+                throw new ArgumentException("Account is deactivated");
+
+            var userRefreshToken = await _tokenRepository.GetByUserIdAsync(user.Id);
+
+            if (userRefreshToken == null)
+                throw new Exception("Invalid refresh token");
+
+            if (userRefreshToken.IsRevoked)
+                throw new ArgumentException("Refresh token is revoked");
+
+            if(userRefreshToken.RefreshToken != refreshTokenDto.RefreshToken)
+                throw new ArgumentException("Invalid refresh token");
+            
+            if(userRefreshToken.ExpiresAt < DateTime.UtcNow)
+                throw new ArgumentException("Session expired, Please login again");
+
+            // Generate token
+            var tokenDetails = _tokenService.GenerateToken(user.Id, user.Email, user.Name);
+
+            var refreshTokenDetails = new UserRefreshToken
+            {
+                UserId = user.Id,
+                RefreshToken = tokenDetails.RefreshToken,
+                ExpiresAt = tokenDetails.RefreshTokenExpiresAt,
+                IsRevoked = false
+            };
+            await _tokenRepository.AddRefreshToken(refreshTokenDetails);
+
+            return SuccessResponse(
+                new AuthResponseDto
+                {
+                    AccessToken = tokenDetails.AccessToken,
+                    RefreshToken = tokenDetails.RefreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddHours(24)
+                }
+            );
         }
     }
 }

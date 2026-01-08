@@ -14,6 +14,7 @@ namespace finShark_demo.Application.Services.Interfaces.User
     {
         Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterUserDto registerDto);
         Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto loginDto);
+        Task<ApiResponse<UserDto>> GetUserProfileAsync(int id);
         Task<ApiResponse<UserDto>> GetUserByIdAsync(int id);
         Task<ApiResponse<UserDto>> GetUserByGIdAsync(Guid gid);
         Task<ApiResponse<IEnumerable<UserDto>>> GetAllUsersAsync();
@@ -21,5 +22,6 @@ namespace finShark_demo.Application.Services.Interfaces.User
         Task<ApiResponse<bool>> DeleteUserAsync(int id);
         Task<ApiResponse<bool>> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto);
         Task<ApiResponse<bool>> VerifyEmailAsync(Guid gid);
+        Task<ApiResponse<AuthResponseDto>> RefreshTokenAsync(RefreshTokenDto refreshTokenDto);
     }
 }

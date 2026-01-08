@@ -52,7 +52,7 @@ namespace finShark_demo.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
 
-            var user = await _userService.GetUserByIdAsync(userId);
+            var user = await _userService.GetUserProfileAsync(userId);
             return Ok(user);
         }
 
@@ -94,6 +94,22 @@ namespace finShark_demo.Controllers
             var response = await _userService.VerifyEmailAsync(gid);
             return StatusCode(response.StatusCode, response);
             // return Ok(new { message = "Email verified successfully" });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("auth/refresh-token")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+        {
+            // var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            // if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            //     return Unauthorized();
+            
+
+            var response = await _userService.RefreshTokenAsync(refreshTokenDto);
+            return StatusCode(response.StatusCode, response);
+            // return Ok(response);
         }
     }
 }

@@ -10,6 +10,8 @@ using finShark_demo.Infrastructure.Repositories;
 using finShark_demo.Core.Interfaces;
 using finShark_demo.Application.Services.Interfaces.Token;
 using finShark_demo.Application.Services;
+using finShark_demo.Core.Interfaces.Token;
+using finShark_demo.Infrastructure.Repositories.Token;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +58,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
 // Services
 builder.Services.AddScoped<ITokenService, TokenService>();
