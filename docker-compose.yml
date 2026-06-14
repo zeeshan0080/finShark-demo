@@ -1,0 +1,34 @@
+services:
+  # sqlserver:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   container_name: gostack_sql
+  #   environment:
+  #     SA_PASSWORD: "YourStrong@Passw0rd"
+  #     ACCEPT_EULA: "Y"
+  #   ports:
+  #     - "1433:1433"
+  finShark:
+    container_name: finshark-container
+    image: ${DOCKER_REGISTRY-}finshark-image
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=finShark_db;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True
+    networks:
+      - app-network
+    ports:
+      - "8080:8080"
+    # depends_on:
+    #   - sqlserver
+    #volumes:
+    #  - finshark_logs:/app/src/finShark-demo/logs
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  gostack_logs:
+    driver: local
